@@ -5,8 +5,24 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="IoC\" />
+    <Folder Include="Messaging\" />
+    <Folder Include="Messaging\Models\" />
+    <Folder Include="Persistence\" />
+    <Folder Include="Persistence\Contexts\" />
+    <Folder Include="Persistence\Repositories\" />
     <Folder Include="Schemas\" />
+    <Folder Include="Schemas\CTe-4.0\" />
+    <Folder Include="Schemas\NFe-4.0\" />
+    <Folder Include="Schemas\NFSe-1.0\" />
     <Folder Include="Services\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.3" />
+    <PackageReference Include="MongoDB.EntityFrameworkCore" Version="10.0.0" />
+
   </ItemGroup>
 
   <PropertyGroup>

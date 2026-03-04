@@ -5,7 +5,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Contracts\" />
+    <Folder Include="features\" />
+    <Folder Include="features\Commands\" />
+    <Folder Include="features\Commands\DocumentoFiscal\" />
+    <Folder Include="features\Commands\DocumentoFiscal\CreateDocumentoFiscal\" />
+    <Folder Include="features\Queries\" />
+    <Folder Include="Models\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MediatR" Version="14.1.0" />
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="10.0.3" />
   </ItemGroup>
 
   <PropertyGroup>
