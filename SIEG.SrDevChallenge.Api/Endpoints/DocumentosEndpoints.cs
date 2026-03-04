@@ -9,9 +9,9 @@ public static class DocumentosEndpoints
 {
     public static void MapDocumentosEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("/api/documentosfiscais");
-
-        group.MapPost("/", UploadXML);
+        var group = app.MapGroup("/api/documentos-fiscais");
+        group.DisableAntiforgery();
+        group.MapPost("/", UploadXML).AllowAnonymous();
     }
 
     private static async Task<IResult> UploadXML([FromForm] IFormFile file, IMediator mediatr)
