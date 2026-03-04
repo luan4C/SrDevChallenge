@@ -5,7 +5,7 @@
 *.sln.docstates
 
 *.userprefs
-
+.env
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/

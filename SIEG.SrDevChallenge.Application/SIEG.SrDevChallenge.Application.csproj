@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SIEG.SrDevChallenge.Domain\SIEG.SrDevChallenge.Domain.csproj" />
+    <ProjectReference Include="..\SIEG.SrDevChallenge.CrossCutting\SIEG.SrDevChallenge.CrossCutting.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -10,6 +11,7 @@
     <Folder Include="features\Commands\DocumentoFiscal\" />
     <Folder Include="features\Commands\DocumentoFiscal\CreateDocumentoFiscal\" />
     <Folder Include="features\Queries\" />
+    <Folder Include="IoC\" />
     <Folder Include="Models\" />
   </ItemGroup>
 

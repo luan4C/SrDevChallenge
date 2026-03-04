@@ -14,7 +14,7 @@ public class DocumentoFiscalXMLSchemaValidator : IDocumentSchemaValidator
     {
         
         DocumentoFiscalReader reader = new (xmlContent);
-        tipoDocumento ??= reader.TipoDocumento;
+        tipoDocumento ??= reader.Metadata.TipoDocumento;
         var result = new DocumentSchemaValidationResult();
         var schemas = GetSchema(tipoDocumento.Value);
 

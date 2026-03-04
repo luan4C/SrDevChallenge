@@ -14,8 +14,26 @@ public class CreateDocumentoFiscalCommandHandler(IDocumentoFiscalRepository repo
     {
         DocumentoFiscalReader reader = new(request.XMLdoc);
 
-        var result = await schemaValidator.ValidateAsync(reader.XmlOriginal, reader.TipoDocumento);
+        var result = await schemaValidator.ValidateAsync(reader.XmlOriginal, reader.Metadata.TipoDocumento);
+        if (!result.IsValid)
+        {
+            //Todo criar estrutura melhor
+            throw new InvalidDataException($"Xml de {reader.Metadata.TipoDocumento} inválido");
+        }
+        Domain.Entities.DocumentoFiscal documentoFiscal = new()
+        {                       
+            DocumentoEmissor = reader.Metadata.DocumentoEmitente,
+            DocumentoDestinatario = reader.Metadata.DocumentoDestinatario,
+            TipoDocumento = reader.Metadata.TipoDocumento,
+            Data = reader.Metadata.DataEmissao.Value,
+            ChaveAcesso = reader.Metadata.ChaveAcesso,
+            ValorTotal = reader.Metadata.ValorTotal,
+            TipoDestinatario = reader.Metadata.TipoDestinatario,
+            TipoEmissor = reader.Metadata.TipoEmitente
+        };
         
-        throw new NotImplementedException();
+        await _repository.AddAsync(documentoFiscal);
+
+        return Unit.Value;
     }
 }

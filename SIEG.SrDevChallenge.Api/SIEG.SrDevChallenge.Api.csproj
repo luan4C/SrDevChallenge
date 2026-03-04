@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <Folder Include="Configurations\" />
+    <Folder Include="Endpoints\" />
   </ItemGroup>
 
 </Project>

@@ -2,26 +2,28 @@ using System;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Xml;
 using System.Xml;
+using SIEG.SrDevChallenge.CrossCutting.Helpers;
 using SIEG.SrDevChallenge.Domain.Enums;
+
 
 namespace SIEG.SrDevChallenge.Application.Models;
 
 public class DocumentoFiscalReader : IDisposable
-{   
-    public TipoDocumentoFiscal TipoDocumento { get;}
-    public XmlReader XmlReader {get; protected set;} = default!;
-    public string HashXml {get;}
-    public string XmlOriginal {get;}    
+{
+    public XmlReader XmlReader { get; protected set; } = default!;
+    public string HashXml { get; }
+    public string XmlOriginal { get; }
+    public DocumentoFiscalMetadata Metadata { get; }
     private static TipoDocumentoFiscal IdentificaTipoDocumentoFiscal(XmlReader reader)
     {
         var rootLocal = reader.LocalName;
         var ns = reader.NamespaceURI ?? "";
 
-        if(rootLocal is "NFe" or "enviNFe" or "procNFe" or "nfeProc")
+        if (rootLocal is "NFe" or "enviNFe" or "procNFe" or "nfeProc")
             return TipoDocumentoFiscal.NFe;
 
-        if(rootLocal is "CTe" or "enviCTe" or "cteProc" or "procCTe")
-            return TipoDocumentoFiscal.CTe;    
+        if (rootLocal is "CTe" or "enviCTe" or "cteProc" or "procCTe")
+            return TipoDocumentoFiscal.CTe;
 
         if (ns.Contains("nfe", StringComparison.OrdinalIgnoreCase))
             return TipoDocumentoFiscal.NFe;
@@ -35,6 +37,139 @@ public class DocumentoFiscalReader : IDisposable
 
         throw new ArgumentException("Não foi possivel identificar o tipo do arquivo xml");
     }
+
+    private DocumentoFiscalMetadata ExtractMetadata(string xml)
+    {
+        var metadata = new DocumentoFiscalMetadata();
+
+        using var reader = XmlReader.Create(new StringReader(xml), _readerSettings);
+        reader.MoveToContent();
+
+        IdentificaTipoDocumentoFiscal(reader);
+
+        int emitDepth = -1;
+        int destDepth = -1;
+
+
+        int icmsTotDepth = -1;
+        int vPrestDepth = -1;
+
+        while (reader.Read())
+        {
+            if (reader.NodeType == XmlNodeType.Element)
+            {
+
+                if (reader.LocalName == "emit") emitDepth = reader.Depth;
+                if (reader.LocalName == "dest") destDepth = reader.Depth;
+
+                switch (reader.LocalName)
+                {
+                    case "infNFe":
+                    case "infCTe":
+                        var id = reader.GetAttribute("Id");
+                        if (!string.IsNullOrEmpty(id))
+                            metadata.ChaveAcesso = id.Replace("NFe", "").Replace("CTe", "");
+                        break;
+
+                    case "dhEmi":
+                    case "dEmi":
+                        var data = reader.ReadElementContentAsString();
+                        if (DateTime.TryParse(data, out var parsed))
+                            metadata.DataEmissao ??= parsed;
+                        break;
+
+                    case "CNPJ":
+                    case "CPF":
+                        var doc = reader.ReadElementContentAsString();
+                        var tipoPessoa = reader.LocalName == "CNPJ" ? TipoPessoaFiscal.PJ : TipoPessoaFiscal.PF;
+
+                        var insideEmit = emitDepth != -1 && reader.Depth > emitDepth;
+                        var insideDest = destDepth != -1 && reader.Depth > destDepth;
+
+                        if (insideEmit && metadata.DocumentoEmitente == null)
+                        {
+                            metadata.DocumentoEmitente = doc;
+                            metadata.TipoEmitente = tipoPessoa;
+                        }
+                        else if (insideDest && metadata.DocumentoDestinatario == null)
+                        {
+                            metadata.DocumentoDestinatario = doc;
+                            metadata.TipoDestinatario = tipoPessoa;
+                        }
+                        break;
+
+
+                    case "ICMSTot":
+                        icmsTotDepth = reader.Depth;
+                        break;
+
+                    case "vNF":
+                        if (metadata.TipoDocumento == TipoDocumentoFiscal.NFe &&
+                            metadata.ValorTotal == null &&
+                            icmsTotDepth != -1 && reader.Depth > icmsTotDepth)
+                        {
+                            var s = reader.ReadElementContentAsString();
+                            if (DecimalHelpers.TryParseDecimalCultureAgnostic(s, out var v))
+                                metadata.ValorTotal = v;
+                        }
+                        break;
+
+
+                    case "vPrest":
+                        vPrestDepth = reader.Depth;
+                        break;
+
+                    case "vTPrest":
+                        if (metadata.TipoDocumento == TipoDocumentoFiscal.CTe &&
+                            metadata.ValorTotal == null &&
+                            vPrestDepth != -1 && reader.Depth > vPrestDepth)
+                        {
+                            var s = reader.ReadElementContentAsString();
+                            if (DecimalHelpers.TryParseDecimalCultureAgnostic(s, out var v))
+                                metadata.ValorTotal = v;
+                        }
+                        break;
+
+
+                    case "ValorServicos":
+                    case "ValorLiquidoNfse":
+                    case "ValorNfse":
+                        if (metadata.TipoDocumento == TipoDocumentoFiscal.NFSe && metadata.ValorTotal == null)
+                        {
+                            var s = reader.ReadElementContentAsString();
+                            if (DecimalHelpers.TryParseDecimalCultureAgnostic(s, out var v))
+                                metadata.ValorTotal = v;
+                        }
+                        break;
+                }
+            }
+            else if (reader.NodeType == XmlNodeType.EndElement)
+            {
+
+                if (emitDepth != -1 && reader.LocalName == "emit" && reader.Depth == emitDepth)
+                    emitDepth = -1;
+
+                if (destDepth != -1 && reader.LocalName == "dest" && reader.Depth == destDepth)
+                    destDepth = -1;
+
+                if (icmsTotDepth != -1 && reader.LocalName == "ICMSTot" && reader.Depth == icmsTotDepth)
+                    icmsTotDepth = -1;
+
+                if (vPrestDepth != -1 && reader.LocalName == "vPrest" && reader.Depth == vPrestDepth)
+                    vPrestDepth = -1;
+            }
+
+            if (metadata.DataEmissao != null &&
+                metadata.DocumentoEmitente != null &&
+                metadata.DocumentoDestinatario != null &&
+                (metadata.TipoDocumento == TipoDocumentoFiscal.NFSe || metadata.ChaveAcesso != null) &&
+                metadata.ValorTotal != null)
+            {
+                break;
+            }
+        }
+        return metadata;
+    }
     private readonly XmlReaderSettings _readerSettings = new()
     {
         DtdProcessing = DtdProcessing.Prohibit,
@@ -42,7 +177,7 @@ public class DocumentoFiscalReader : IDisposable
         IgnoreComments = true,
         IgnoreWhitespace = true
     };
-    public DocumentoFiscalReader(string  xml)
+    public DocumentoFiscalReader(string xml)
     {
         if (string.IsNullOrWhiteSpace(xml))
             throw new ArgumentException("XML não pode ser vazio.", nameof(xml));
@@ -52,11 +187,12 @@ public class DocumentoFiscalReader : IDisposable
         {
             tempReader.MoveToContent();
 
-            TipoDocumento = IdentificaTipoDocumentoFiscal(tempReader);         
+            Metadata = ExtractMetadata(xml);
         }
         //Validar XML
         XmlReader = XmlReader.Create(new StringReader(xml), _readerSettings);
         HashXml = GenerateHashXml(xml);
+
     }
     private static string GenerateHashXml(string xml)
     {
@@ -66,7 +202,7 @@ public class DocumentoFiscalReader : IDisposable
         };
 
         doc.LoadXml(xml);
-  
+
         var transform = new XmlDsigC14NTransform();
         transform.LoadInput(doc);
 
@@ -81,4 +217,16 @@ public class DocumentoFiscalReader : IDisposable
     {
         XmlReader.Dispose();
     }
+}
+
+public class DocumentoFiscalMetadata
+{
+    public string? ChaveAcesso { get; set; }
+    public TipoPessoaFiscal TipoEmitente { get; set; }
+    public string? DocumentoEmitente { get; set; }
+    public TipoPessoaFiscal TipoDestinatario { get; set; }
+    public string? DocumentoDestinatario { get; set; }
+    public DateTime? DataEmissao { get; set; }
+    public decimal ValorTotal { get; set; }
+    public TipoDocumentoFiscal TipoDocumento { get; set; }
 }
