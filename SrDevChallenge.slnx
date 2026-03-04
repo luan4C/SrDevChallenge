@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="SIEG.SrDevChallenge.Api/SIEG.SrDevChallenge.Api.csproj" />
+  <Project Path="SIEG.SrDevChallenge.Application/SIEG.SrDevChallenge.Application.csproj" />
+  <Project Path="SIEG.SrDevChallenge.CrossCutting/SIEG.SrDevChallenge.CrossCutting.csproj" />
+  <Project Path="SIEG.SrDevChallenge.Domain/SIEG.SrDevChallenge.Domain.csproj" />
+  <Project Path="SIEG.SrDevChallenge.Infrastructure/SIEG.SrDevChallenge.Infrastructure.csproj" />
+</Solution>
