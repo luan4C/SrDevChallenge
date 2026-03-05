@@ -15,8 +15,14 @@ builder.Services.AddOpenApi();
 builder.Services.ConfigureMiddlewareServices();
 builder.Services.ConfigureEnvironment(builder.Configuration);
 builder.Services.ConfigureXMLServices();
-builder.Services.ConfigurePersistence(builder.Configuration);
-builder.Services.ConfigureRabbitMQ(builder.Configuration);
+
+// Só configura persistência se não for ambiente de teste
+if (builder.Environment.EnvironmentName != "Testing")
+{
+    builder.Services.ConfigurePersistence(builder.Configuration);
+    builder.Services.ConfigureRabbitMQ(builder.Configuration);
+}
+
 builder.Services.ConfigureApplicationServices();
 var app = builder.Build();
 
@@ -32,6 +38,10 @@ app.UseHttpsRedirection();
 
 app.MapDocumentosEndpoints();
 
-app.ConfigureMongoStartup();
+// Só configura MongoDB se não for ambiente de teste
+if (app.Environment.EnvironmentName != "Testing")
+{
+    app.ConfigureMongoStartup();
+}
 
 app.Run();

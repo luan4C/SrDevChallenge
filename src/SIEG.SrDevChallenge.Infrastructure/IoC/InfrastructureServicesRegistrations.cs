@@ -18,6 +18,13 @@ public static class InfrastructureServicesRegistrations
 {
     public static IServiceCollection ConfigurePersistence(this IServiceCollection services, IConfiguration configuration)
     {
+        // Não configurar mongo em ambinete de teste
+        var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        if (env == "Testing")
+        {
+            return services;
+        }
+        
         var connectionString = configuration.GetConnectionString("Mongo");
         if(string.IsNullOrEmpty(connectionString))
         {

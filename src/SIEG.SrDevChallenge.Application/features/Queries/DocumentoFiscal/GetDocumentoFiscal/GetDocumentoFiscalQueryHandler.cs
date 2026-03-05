@@ -17,6 +17,7 @@ public class GetDocumentoFiscalQueryHandler(IDocumentoFiscalRepository documento
 
         var documentoFiscalDetails = new DocumentoFiscalDetailsDTO
         {
+            Id = documentoFiscal.Id,
             ChaveAcesso = documentoFiscal.ChaveAcesso,
             Data = documentoFiscal.Data,
             TipoEmissor = documentoFiscal.TipoEmissor,

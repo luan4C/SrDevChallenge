@@ -1,4 +1,9 @@
 <Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/tests/">
+    <Project Path="tests/SIEG.SrDevChallenge.IntegrationTests/SIEG.SrDevChallenge.IntegrationTests.csproj" />
+    <Project Path="tests/SIEG.SrDevChallenge.UnitTests/SIEG.SrDevChallenge.UnitTests.csproj" />
+  </Folder>
   <Project Path="src/SIEG.SrDevChallenge.Api/SIEG.SrDevChallenge.Api.csproj" />
   <Project Path="src/SIEG.SrDevChallenge.Application/SIEG.SrDevChallenge.Application.csproj" />
   <Project Path="src/SIEG.SrDevChallenge.CrossCutting/SIEG.SrDevChallenge.CrossCutting.csproj" />

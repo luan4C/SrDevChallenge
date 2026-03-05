@@ -2,8 +2,10 @@ using System;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Xml;
 using System.Xml;
+using Microsoft.IdentityModel.Tokens.Experimental;
 using SIEG.SrDevChallenge.CrossCutting.Helpers;
 using SIEG.SrDevChallenge.Domain.Enums;
+using SIEG.SrDevChallenge.Domain.Exceptions;
 
 
 namespace SIEG.SrDevChallenge.Application.Models;
@@ -35,7 +37,10 @@ public class DocumentoFiscalReader : IDisposable
             ns.Contains("abrasf", StringComparison.OrdinalIgnoreCase))
             return TipoDocumentoFiscal.NFSe;
 
-        throw new ArgumentException("Não foi possivel identificar o tipo do arquivo xml");
+        throw new ValidationException("Estrutura inválida", new Dictionary<string, string[]>
+        {
+            { "DocumentoFiscal", _invalidFormatMessage }
+        });
     }
 
     private DocumentoFiscalMetadata ExtractMetadata(string xml)
@@ -197,6 +202,8 @@ public class DocumentoFiscalReader : IDisposable
         IgnoreComments = true,
         IgnoreWhitespace = true
     };
+    private static readonly string[] _invalidFormatMessage = ["Tipo de documento fiscal não identificado. Verifique se o XML é válido e se segue os padrões de NFe, CTe ou NFSe."];
+
     public DocumentoFiscalReader(string xml)
     {
         if (string.IsNullOrWhiteSpace(xml))

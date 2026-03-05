@@ -84,7 +84,7 @@ public class GlobalExceptionHandler : IMiddleware
             _ => new ValidationProblemDetails
             {
                 Title = "Erro Interno do Servidor",
-                Detail = "Ocorreu um erro interno no servidor.",
+                Detail =  exception?.InnerException?.Message ?? exception?.Message ?? "Ocorreu um erro interno no servidor.",
                 Status = (int)HttpStatusCode.InternalServerError,
                 Instance = context.Request.Path
             }

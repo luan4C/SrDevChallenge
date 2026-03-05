@@ -5,6 +5,7 @@ namespace SIEG.SrDevChallenge.Application.features.Queries.DocumentoFiscal.GetDo
 
 public class DocumentoFiscalDetailsDTO
 {
+    public Guid Id { get; set; }
     public string ChaveAcesso { get; set; }
     public DateTime Data { get; set; }
     public TipoPessoaFiscal TipoEmissor { get; set; }
