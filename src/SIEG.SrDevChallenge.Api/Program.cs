@@ -13,10 +13,10 @@ builder.Configuration.AddEnvironmentVariables();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.ConfigureMiddlewareServices();
-builder.ConfigureEnvironment();
+builder.Services.ConfigureEnvironment(builder.Configuration);
 builder.Services.ConfigureXMLServices();
 builder.Services.ConfigurePersistence(builder.Configuration);
-builder.Services.ConfigureRabbitMQ();
+builder.Services.ConfigureRabbitMQ(builder.Configuration);
 builder.Services.ConfigureApplicationServices();
 var app = builder.Build();
 

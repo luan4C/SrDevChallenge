@@ -46,6 +46,7 @@ public class RabbitMqEventConsumer : BackgroundService
 
         _connection = factory.CreateConnectionAsync().GetAwaiter().GetResult();
         _channel = _connection.CreateChannelAsync().GetAwaiter().GetResult();
+        _resiliencePipeline = CreateResiliencePipeline();
     }
     private ResiliencePipeline CreateResiliencePipeline()
     {
@@ -151,14 +152,12 @@ public class RabbitMqEventConsumer : BackgroundService
                 _logger.LogError(ex, "Failed to process message after all retries. RetryCount: {RetryCount}", retryCount);
 
                 if (retryCount >= _retryConfig.MaxRetryAttempts)
-                {
-                    // Enviar para Dead Letter
+                {     
                     await _channel.BasicNackAsync(deliveryTag: deliveryTag, multiple: false, requeue: false);
                     _logger.LogError("Message sent to dead letter queue after {MaxRetries} attempts", _retryConfig.MaxRetryAttempts);
                 }
                 else
                 {
-                    // Rejeitar para retry
                     await _channel.BasicNackAsync(deliveryTag: deliveryTag, multiple: false, requeue: true);
                 }
             }
@@ -194,12 +193,6 @@ public class RabbitMqEventConsumer : BackgroundService
         return 0;
     }
 
-    private static void SetRetryCount(IBasicProperties properties, int retryCount)
-    {
-        properties.Headers ??= new Dictionary<string, object>();
-        properties.Headers["x-retry-count"] = retryCount;
-        
-    }
     private async Task SetupDeadLetterExchange(string mainQueue, string dlxQueue, CancellationToken cancellationToken)
     {
 

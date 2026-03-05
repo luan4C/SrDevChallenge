@@ -6,14 +6,11 @@ namespace SIEG.SrDevChallenge.Api.Configurations;
 
 public static class EnvironmentConfigurations
 {
-    public static WebApplicationBuilder ConfigureEnvironment(this WebApplicationBuilder builder)
+    public static IServiceCollection ConfigureEnvironment(this IServiceCollection services, IConfiguration configuration)
     {
-        builder.Services.AddOptions<RabbitMqConfigurations>().Bind(builder.Configuration.GetSection("RabbitMQ"))
-        .ValidateDataAnnotations().ValidateOnStart();
-
-        builder.Services.AddOptions<ApiKeySettings>().Bind(builder.Configuration.GetSection("ApiKeySettings"))
+        services.AddOptions<ApiKeySettings>().Bind(configuration.GetSection("ApiKeySettings"))
         .ValidateDataAnnotations().ValidateOnStart();
         
-        return builder;    
+        return services;    
     }
 }
