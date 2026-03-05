@@ -26,15 +26,10 @@ public static class SwaggerConfigurations
                 Scheme = "ApiKeyScheme"
             });
 
-            c.AddSecurityRequirement(document =>
-{
-            OpenApiSecuritySchemeReference? schemeRef = new("ApiKey");
-            OpenApiSecurityRequirement? requirement = new()
+            c.AddSecurityRequirement(document => new OpenApiSecurityRequirement()
             {
-                [schemeRef] = []
-            };
-            return requirement;
-        });
+                [new OpenApiSecuritySchemeReference("ApiKey", document)] = []
+            });
                 
 
             // Configura o swagger para usar o OpenAPI 3.0

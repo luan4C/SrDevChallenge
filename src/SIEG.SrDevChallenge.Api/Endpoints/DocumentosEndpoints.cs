@@ -54,15 +54,15 @@ public static class DocumentosEndpoints
         
         group.MapGet("/", GetPagedList)
             .WithName("GetDocumentosFiscaisList")
-            .WithSummary("Consulta de documentos fiscais com filtros e paginação")
+            .WithSummary("Consulta de documentos fiscais com filtros e paginação")            
             .WithDescription("""
                 Permite consultar a lista de documentos fiscais aplicando filtros por data, emissor, 
                 destinatário e tipo de documento. Os resultados são paginados.
                 
                 **Filtros disponíveis:**
-                - Data de início e fim (obrigatório)
-                - Documento do emissor (obrigatório)
-                - Documento do destinatário (opcional)
+                - Data de início e fim (obrigatório) (yyyy-MM-dd)
+                - Documento do emissor (obrigatório) (sem formatação, apenas números)
+                - Documento do destinatário (opcional) (sem formatação, apenas números)
                 - Tipo de documento fiscal (opcional: 1-NFe, 2-NFSe, 3-CTe)
                 
                 **Paginação:**
@@ -170,7 +170,7 @@ public static class DocumentosEndpoints
         if (!file.FileName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
             return Results.BadRequest(new ProblemDetails { Title = "Arquivo deve ser XML." });
 
-        var allowedMimeTypes = new[] { "application/xml" };
+        var allowedMimeTypes = new[] { "application/xml", "text/xml" };
         if (!allowedMimeTypes.Contains(file.ContentType))
         {
             return Results.BadRequest(new ProblemDetails { Title = "Tipo MIME não permitido." });
@@ -192,7 +192,7 @@ public static class DocumentosEndpoints
         if (!file.FileName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
             return Results.BadRequest(new ProblemDetails { Title = "Arquivo deve ser XML." });
 
-        var allowedMimeTypes = new[] { "application/xml" };
+        var allowedMimeTypes = new[] { "application/xml", "text/xml"   };
         if (!allowedMimeTypes.Contains(file.ContentType))
         {
             return Results.BadRequest(new ProblemDetails { Title = "Tipo MIME não permitido." });
