@@ -26,7 +26,7 @@ public class UpdateDocumentoFiscalCommandHandler(IDocumentoFiscalRepository repo
         {
             throw new ValidationException($"XML inválido para {reader.Metadata.TipoDocumento}", new Dictionary<string, string[]>
             {
-                { "Errors", validationResult.Errors.ToArray() }
+                { "Validacoes", validationResult.Errors.ToArray() }
             });
         }
 

@@ -16,6 +16,7 @@ builder.Services.ConfigureMiddlewareServices();
 builder.ConfigureEnvironment();
 builder.Services.ConfigureXMLServices();
 builder.Services.ConfigurePersistence(builder.Configuration);
+builder.Services.ConfigureRabbitMQ();
 builder.Services.ConfigureApplicationServices();
 var app = builder.Build();
 

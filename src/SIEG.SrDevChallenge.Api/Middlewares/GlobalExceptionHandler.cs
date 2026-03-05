@@ -31,7 +31,7 @@ public class GlobalExceptionHandler : IMiddleware
     {
         var problemDetails = CreateProblemDetails(exception, context);
 
-        context.Response.ContentType = "application/problem+json";
+        context.Response.ContentType = "application/json";
         context.Response.StatusCode = problemDetails.Status ?? 500;
 
         var options = new JsonSerializerOptions
@@ -44,7 +44,7 @@ public class GlobalExceptionHandler : IMiddleware
         await context.Response.WriteAsync(json);
     }
 
-    private static ProblemDetails CreateProblemDetails(Exception exception, HttpContext context)
+    private static ValidationProblemDetails CreateProblemDetails(Exception exception, HttpContext context)
     {
         return exception switch
         {
@@ -53,10 +53,11 @@ public class GlobalExceptionHandler : IMiddleware
                 Title = "Erro de Validação",
                 Detail = validationEx.Message,
                 Status = (int)HttpStatusCode.BadRequest,
-                Instance = context.Request.Path
+                Instance = context.Request.Path,
+                Errors = validationEx.Errors
             },
 
-            NotFoundException notFoundEx => new ProblemDetails
+            NotFoundException notFoundEx => new ValidationProblemDetails
             {
                 Title = "Recurso Não Encontrado",
                 Detail = notFoundEx.Message,
@@ -64,7 +65,7 @@ public class GlobalExceptionHandler : IMiddleware
                 Instance = context.Request.Path
             },
 
-            ConflictException conflictEx => new ProblemDetails
+            ConflictException conflictEx => new ValidationProblemDetails
             {
                 Title = "Conflito de Dados",
                 Detail = conflictEx.Message,
@@ -72,7 +73,7 @@ public class GlobalExceptionHandler : IMiddleware
                 Instance = context.Request.Path
             },
 
-            UnexpectedException unexpectedEx => new ProblemDetails
+            UnexpectedException unexpectedEx => new ValidationProblemDetails
             {
                 Title = "Erro Inesperado",
                 Detail = "Ocorreu um erro inesperado durante o processamento da solicitação.",
@@ -80,7 +81,7 @@ public class GlobalExceptionHandler : IMiddleware
                 Instance = context.Request.Path
             },
 
-            _ => new ProblemDetails
+            _ => new ValidationProblemDetails
             {
                 Title = "Erro Interno do Servidor",
                 Detail = "Ocorreu um erro interno no servidor.",

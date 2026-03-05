@@ -2,14 +2,16 @@ using System;
 using MediatR;
 using SIEG.SrDevChallenge.Application.Contracts;
 using SIEG.SrDevChallenge.Application.Models;
+using SIEG.SrDevChallenge.Domain.Events;
 using SIEG.SrDevChallenge.Domain.Exceptions;
 
 namespace SIEG.SrDevChallenge.Application.features.Commands.DocumentoFiscal.CreateDocumentoFiscal;
 
-public class CreateDocumentoFiscalCommandHandler(IDocumentoFiscalRepository repository, IDocumentSchemaValidator schemaValidator) : IRequestHandler<CreateDocumentoFiscalCommand, Result<Guid>>
+public class CreateDocumentoFiscalCommandHandler(IDocumentoFiscalRepository repository, IDocumentSchemaValidator schemaValidator, IEventPublisher eventPublisher) : IRequestHandler<CreateDocumentoFiscalCommand, Result<Guid>>
 {
     private readonly IDocumentoFiscalRepository _repository = repository;
     private readonly IDocumentSchemaValidator schemaValidator = schemaValidator;
+    private readonly IEventPublisher _eventPublisher = eventPublisher;
 
     public async Task<Result<Guid>> Handle(CreateDocumentoFiscalCommand request, CancellationToken cancellationToken)
     {
@@ -21,7 +23,7 @@ public class CreateDocumentoFiscalCommandHandler(IDocumentoFiscalRepository repo
             //Todo criar estrutura melhor
             throw new ValidationException($"XML inválido para {reader.Metadata.TipoDocumento}", new Dictionary<string, string[]>
             {
-                { "Errors", result.Errors.ToArray() },
+                { "Validacoes", result.Errors.ToArray() },
                
             });
         }
@@ -42,7 +44,9 @@ public class CreateDocumentoFiscalCommandHandler(IDocumentoFiscalRepository repo
         try
         {
             await _repository.AddAsync(documentoFiscal);
-            //Emitir evento
+   
+            var evento = new DocumentoFiscalCriado(documentoFiscal);
+            await _eventPublisher.PublishAsync(evento, cancellationToken: cancellationToken);
         }
         catch (ConflictException)
         {

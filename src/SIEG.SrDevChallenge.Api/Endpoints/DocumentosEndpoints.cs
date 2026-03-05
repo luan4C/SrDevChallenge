@@ -85,7 +85,7 @@ public static class DocumentosEndpoints
         return Results.Ok(result);
     }
 
-    private static async Task<IResult> UploadXML([FromForm] IFormFile file, IMediator mediatr)
+    private static async Task<IResult> UploadXML([FromForm]  IFormFile file, IMediator mediatr)
     {
         if (file == null || file.Length == 0)
             return Results.BadRequest("Arquivo XML não enviado.");

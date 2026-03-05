@@ -33,7 +33,7 @@ public class DocumentoFiscalXMLSchemaValidator : IDocumentSchemaValidator
 
         settings.ValidationEventHandler += (_, e) =>
         {            
-            result.Errors.Add("{e.Severity}: {e.Message}");
+            result.Errors.Add($"{e.Severity}: {e.Message}");
         };
 
         using var validationReader = XmlReader.Create(new StringReader(reader.XmlOriginal), settings);

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
 using SIEG.SrDevChallenge.Application.Contracts;
+using SIEG.SrDevChallenge.Infrastructure.Messaging;
 using SIEG.SrDevChallenge.Infrastructure.Persistence.Contexts;
 using SIEG.SrDevChallenge.Infrastructure.Persistence.Mongo;
 using SIEG.SrDevChallenge.Infrastructure.Persistence.Repositories;
@@ -24,11 +25,20 @@ public static class InfrastructureServicesRegistrations
         services.AddScoped<MongoIndexInitializer>();
 
         services.AddScoped<IDocumentoFiscalRepository, DocumentoFiscalRepository>();
+        services.AddScoped<IDocumentoFiscaisResumoMensalRepository, DocumentoFiscaisResumoMensalRepository>();
         return services;
     }
     public static IServiceCollection ConfigureXMLServices(this IServiceCollection services)
     {
         services.AddScoped<IDocumentSchemaValidator, DocumentoFiscalXMLSchemaValidator>();
+
+        return services;
+    }
+
+    public static IServiceCollection ConfigureRabbitMQ(this IServiceCollection services)
+    {
+        services.AddSingleton<IEventPublisher, RabbitMqEventPublisher>();
+        services.AddHostedService<RabbitMqEventConsumer>();
 
         return services;
     }
