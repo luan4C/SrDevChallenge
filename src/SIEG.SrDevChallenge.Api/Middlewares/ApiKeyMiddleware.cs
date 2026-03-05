@@ -13,7 +13,7 @@ public class ApiKeyMiddleware(IOptions<ApiKeySettings> apiKeySettings, ILogger<A
 
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
-        // Pula validação para endpoints de documentação/health checks
+        
         if (IsExcludedPath(context.Request.Path))
         {
             await next(context);

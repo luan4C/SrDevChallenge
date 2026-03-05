@@ -10,6 +10,7 @@
     <Folder Include="features\Commands\DocumentoFiscal\" />
     <Folder Include="features\Commands\DocumentoFiscal\CreateDocumentoFiscal\" />
     <Folder Include="features\Commands\DocumentoFiscal\RemoveDocumentoFIscal\" />
+    <Folder Include="features\Commands\DocumentoFiscal\UpdateDocumentoFiscal\" />
     <Folder Include="IoC\" />
     <Folder Include="Models\" />
   </ItemGroup>

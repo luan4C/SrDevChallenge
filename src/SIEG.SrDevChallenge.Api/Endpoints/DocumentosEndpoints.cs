@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SIEG.SrDevChallenge.Application.features.Commands.DocumentoFiscal.CreateDocumentoFiscal;
 using SIEG.SrDevChallenge.Application.features.Commands.DocumentoFiscal.RemoveDocumentoFIscal;
+using SIEG.SrDevChallenge.Application.features.Commands.DocumentoFiscal.UpdateDocumentoFiscal;
 using SIEG.SrDevChallenge.Application.features.Queries.DocumentoFiscal.GetDocumentListBy;
 using SIEG.SrDevChallenge.Application.features.Queries.DocumentoFiscal.GetDocumentoFiscal;
 using SIEG.SrDevChallenge.Application.Models;
@@ -48,6 +49,13 @@ public static class DocumentosEndpoints
             operation.Description = "Permite remover um documento fiscal específico utilizando seu ID único (GUID). Esta operação é irreversível e deve ser utilizada com cautela.";
             return Task.CompletedTask;
         });
+        
+        group.MapPut("/{id:guid}", UpdateDocument).AddOpenApiOperationTransformer((operation, context, _) =>
+        {
+            operation.Summary = "Atualização de documento fiscal por ID";
+            operation.Description = "Permite atualizar um documento fiscal existente utilizando seu ID único (GUID) e enviando um novo arquivo XML. O documento será validado antes da atualização.";
+            return Task.CompletedTask;
+        });
     }
 
     private static async Task<IResult> Remove([FromServices] IMediator mediatr, [FromRoute] Guid id)
@@ -91,6 +99,23 @@ public static class DocumentosEndpoints
         xml = await reader.ReadToEndAsync();
 
         var result = await mediatr.Send(new CreateDocumentoFiscalCommand(xml));
+        return Results.Ok(result);
+    }
+
+    private static async Task<IResult> UpdateDocument([FromRoute] Guid id, [FromForm] IFormFile file, IMediator mediatr)
+    {
+        if (file == null || file.Length == 0)
+            return Results.BadRequest("Arquivo XML não enviado.");
+
+        if (!file.FileName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
+            return Results.BadRequest("Arquivo deve ser XML.");
+
+        string xml;
+        using var reader = new StreamReader(file.OpenReadStream());
+        xml = await reader.ReadToEndAsync();
+
+        var command = new UpdateDocumentoFiscalCommand(id, xml);
+        var result = await mediatr.Send(command);
         return Results.Ok(result);
     }
 }

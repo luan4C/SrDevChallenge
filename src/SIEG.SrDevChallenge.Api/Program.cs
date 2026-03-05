@@ -6,7 +6,7 @@ using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
 
-DotNetEnv.Env.Load(@"..\.env");      
+DotNetEnv.Env.Load(@"..\..\.env");      
 builder.Configuration.AddEnvironmentVariables();
 
 // Add services to the container.
@@ -29,7 +29,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-//TODO: mover para outra configuração
 app.MapDocumentosEndpoints();
 
 app.ConfigureMongoStartup();
