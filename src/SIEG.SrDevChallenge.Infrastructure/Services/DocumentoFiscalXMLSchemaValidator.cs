@@ -15,6 +15,13 @@ public class DocumentoFiscalXMLSchemaValidator : IDocumentSchemaValidator
         
         DocumentoFiscalReader reader = new (xmlContent);
         tipoDocumento ??= reader.Metadata.TipoDocumento;
+        
+        //Implementação futura, para validar NFSe, que tem uma estrutura diferente das outras
+        if(tipoDocumento == TipoDocumentoFiscal.NFSe)
+        {
+            return new DocumentSchemaValidationResult();
+        }
+     
         var result = new DocumentSchemaValidationResult();
         var schemas = GetSchema(tipoDocumento.Value);
 

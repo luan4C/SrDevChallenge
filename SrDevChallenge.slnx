@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/" />
   <Folder Name="/tests/">
+    <Project Path="tests/SIEG.SrDevChallenge.ArchitectureTests/SIEG.SrDevChallenge.ArchitectureTests.csproj" />
     <Project Path="tests/SIEG.SrDevChallenge.IntegrationTests/SIEG.SrDevChallenge.IntegrationTests.csproj" />
     <Project Path="tests/SIEG.SrDevChallenge.UnitTests/SIEG.SrDevChallenge.UnitTests.csproj" />
   </Folder>

@@ -5,11 +5,11 @@ using System.Text.Json;
 
 namespace SIEG.SrDevChallenge.Api.Middlewares;
 
-public class GlobalExceptionHandler : IMiddleware
+public class GlobalExceptionHandlerMiddleware : IMiddleware
 {
-    private readonly ILogger<GlobalExceptionHandler> _logger;
+    private readonly ILogger<GlobalExceptionHandlerMiddleware> _logger;
 
-    public GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger)
+    public GlobalExceptionHandlerMiddleware(ILogger<GlobalExceptionHandlerMiddleware> logger)
     {
         _logger = logger;
     }

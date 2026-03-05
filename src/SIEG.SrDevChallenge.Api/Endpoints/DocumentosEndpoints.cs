@@ -19,43 +19,43 @@ public static class DocumentosEndpoints
         var group = app.MapGroup("/api/documentos-fiscais")
             .WithTags("Documentos Fiscais")
             .WithDescription("Endpoints para gerenciamento de documentos fiscais");
-            
+
         group.DisableAntiforgery();
-        
-        group.MapPost("/", UploadXML).AddOpenApiOperationTransformer((operation,context, _) =>
+
+        group.MapPost("/", UploadXML).AddOpenApiOperationTransformer((operation, context, _) =>
         {
             operation.Summary = "Upload de arquivo XML para criação de documento fiscal";
             operation.Description = "Envia um arquivo XML contendo os dados do documento fiscal a ser criado. O arquivo deve estar no formato correto para que o documento seja processado e armazenado.";
             return Task.CompletedTask;
-        });
-            
-        group.MapGet("/", GetPagedList).AddOpenApiOperationTransformer((operation,context , _) =>
+        }).RequireRateLimiting("fixed");
+
+        group.MapGet("/", GetPagedList).AddOpenApiOperationTransformer((operation, context, _) =>
         {
             operation.Summary = "Consulta de documentos fiscais com filtros e paginação";
             operation.Description = "Permite consultar a lista de documentos fiscais com base em filtros como data de emissão, emissor, destinatário e tipo de documento. Os resultados são paginados para facilitar a navegação.";
             return Task.CompletedTask;
         });
-            
-        group.MapGet("/{id:guid}", GetById).AddOpenApiOperationTransformer((operation, context,_) =>
+
+        group.MapGet("/{id:guid}", GetById).AddOpenApiOperationTransformer((operation, context, _) =>
         {
             operation.Summary = "Consulta de documento fiscal por ID";
             operation.Description = "Permite consultar os detalhes de um documento fiscal específico utilizando seu ID único (GUID). Retorna as informações completas do documento fiscal, incluindo dados do emissor, destinatário, itens e valores.";
             return Task.CompletedTask;
-        }); 
-            
+        });
+
         group.MapDelete("/{id:guid}", Remove).AddOpenApiOperationTransformer((operation, context, _) =>
         {
             operation.Summary = "Remoção de documento fiscal por ID";
             operation.Description = "Permite remover um documento fiscal específico utilizando seu ID único (GUID). Esta operação é irreversível e deve ser utilizada com cautela.";
             return Task.CompletedTask;
-        });
-        
+        }).RequireRateLimiting("fixed");
+
         group.MapPut("/{id:guid}", UpdateDocument).AddOpenApiOperationTransformer((operation, context, _) =>
         {
             operation.Summary = "Atualização de documento fiscal por ID";
             operation.Description = "Permite atualizar um documento fiscal existente utilizando seu ID único (GUID) e enviando um novo arquivo XML. O documento será validado antes da atualização.";
             return Task.CompletedTask;
-        });
+        }).RequireRateLimiting("fixed");
     }
 
     private static async Task<IResult> Remove([FromServices] IMediator mediatr, [FromRoute] Guid id)
@@ -76,7 +76,7 @@ public static class DocumentosEndpoints
         [FromServices] IMediator mediatr,
         [FromQuery] DateTime DataInicio,
         [FromQuery] DateTime DataFim, [FromQuery] string DocumentoEmissor,
-        [FromQuery] int PageNumber = 1, [FromQuery] int PageSize = 10, 
+        [FromQuery] int PageNumber = 1, [FromQuery] int PageSize = 10,
         [FromQuery] string? DocumentoDestinatario = default, [FromQuery] TipoDocumentoFiscal? TipoDocumento = default
         )
     {
@@ -85,15 +85,20 @@ public static class DocumentosEndpoints
         return Results.Ok(result);
     }
 
-    private static async Task<IResult> UploadXML([FromForm]  IFormFile file, IMediator mediatr)
+    private static async Task<IResult> UploadXML([FromForm] IFormFile file, IMediator mediatr)
     {
         if (file == null || file.Length == 0)
-            return Results.BadRequest("Arquivo XML não enviado.");
+            return Results.BadRequest(new ProblemDetails { Title = "Arquivo XML não enviado." });
 
         if (!file.FileName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
-            return Results.BadRequest("Arquivo deve ser XML.");  
+            return Results.BadRequest(new ProblemDetails { Title = "Arquivo deve ser XML." });
 
-            string xml;
+        var allowedMimeTypes = new[] { "application/xml" };
+        if (!allowedMimeTypes.Contains(file.ContentType))
+        {
+            return Results.BadRequest(new ProblemDetails { Title = "Tipo MIME não permitido." });
+        }
+        string xml;
 
         using var reader = new StreamReader(file.OpenReadStream());
         xml = await reader.ReadToEndAsync();
@@ -105,10 +110,16 @@ public static class DocumentosEndpoints
     private static async Task<IResult> UpdateDocument([FromRoute] Guid id, [FromForm] IFormFile file, IMediator mediatr)
     {
         if (file == null || file.Length == 0)
-            return Results.BadRequest("Arquivo XML não enviado.");
+            return Results.BadRequest(new ProblemDetails { Title = "Arquivo XML não enviado." });
 
         if (!file.FileName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
-            return Results.BadRequest("Arquivo deve ser XML.");
+            return Results.BadRequest(new ProblemDetails { Title = "Arquivo deve ser XML." });
+
+        var allowedMimeTypes = new[] { "application/xml" };
+        if (!allowedMimeTypes.Contains(file.ContentType))
+        {
+            return Results.BadRequest(new ProblemDetails { Title = "Tipo MIME não permitido." });
+        }
 
         string xml;
         using var reader = new StreamReader(file.OpenReadStream());

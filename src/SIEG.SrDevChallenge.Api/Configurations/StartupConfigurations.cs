@@ -9,7 +9,7 @@ public static class StartupConfigurations
     public static WebApplication ConfigureMiddlewares(this WebApplication app)
     {
         // Middleware de tratamento global de exceções deve ser o primeiro
-        app.UseMiddleware<GlobalExceptionHandler>();
+        app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
         
         // Middleware de autenticação por API Key
         app.UseMiddleware<ApiKeyMiddleware>();

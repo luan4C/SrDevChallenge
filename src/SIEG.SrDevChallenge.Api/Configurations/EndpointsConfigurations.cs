@@ -6,7 +6,7 @@ public static class EndpointsConfigurations
 {
     public static IServiceCollection ConfigureMiddlewareServices(this IServiceCollection services)
     {
-        services.AddTransient<GlobalExceptionHandler>();
+        services.AddTransient<GlobalExceptionHandlerMiddleware>();
         services.AddScoped<ApiKeyMiddleware>();
         
         return services;

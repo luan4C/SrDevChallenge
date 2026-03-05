@@ -2,7 +2,6 @@ using System;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Xml;
 using System.Xml;
-using Microsoft.IdentityModel.Tokens.Experimental;
 using SIEG.SrDevChallenge.CrossCutting.Helpers;
 using SIEG.SrDevChallenge.Domain.Enums;
 using SIEG.SrDevChallenge.Domain.Exceptions;
