@@ -1,6 +1,42 @@
 @SIEG.SrDevChallenge.Api_HostAddress = http://localhost:5298
+@ApiKey = dev-api-key-123456789
 
-GET {{SIEG.SrDevChallenge.Api_HostAddress}}/weatherforecast/
+### GET Documentos Fiscais (Lista Paginada)
+GET {{SIEG.SrDevChallenge.Api_HostAddress}}/api/documentos-fiscais?DataInicio=2024-01-01&DataFim=2024-12-31&DocumentoEmissor=12345678000199&PageNumber=1&PageSize=10
+X-API-Key: {{ApiKey}}
+Accept: application/json
+
+### GET Documento Fiscal por ID  
+GET {{SIEG.SrDevChallenge.Api_HostAddress}}/api/documentos-fiscais/00000000-0000-0000-0000-000000000000
+X-API-Key: {{ApiKey}}
+Accept: application/json
+
+### POST Upload de XML (Documento Fiscal)
+POST {{SIEG.SrDevChallenge.Api_HostAddress}}/api/documentos-fiscais
+X-API-Key: {{ApiKey}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+
+------WebKitFormBoundary
+Content-Disposition: form-data; name="file"; filename="documento.xml"
+Content-Type: application/xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<nfeProc>
+  <!-- Conteúdo do XML aqui -->
+</nfeProc>
+------WebKitFormBoundary--
+
+### DELETE Documento Fiscal
+DELETE {{SIEG.SrDevChallenge.Api_HostAddress}}/api/documentos-fiscais/00000000-0000-0000-0000-000000000000
+X-API-Key: {{ApiKey}}
+
+### Exemplo com API Key inválida (deve retornar 401)
+GET {{SIEG.SrDevChallenge.Api_HostAddress}}/api/documentos-fiscais?DataInicio=2024-01-01&DataFim=2024-12-31&DocumentoEmissor=12345678000199
+X-API-Key: chave-invalida
+Accept: application/json
+
+### Exemplo sem API Key (deve retornar 401)
+GET {{SIEG.SrDevChallenge.Api_HostAddress}}/api/documentos-fiscais?DataInicio=2024-01-01&DataFim=2024-12-31&DocumentoEmissor=12345678000199
 Accept: application/json
 
 ###

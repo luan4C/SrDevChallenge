@@ -1,5 +1,6 @@
 using System;
 using System.Linq.Expressions;
+using SIEG.SrDevChallenge.Application.Models;
 
 namespace SIEG.SrDevChallenge.Application.Contracts;
 

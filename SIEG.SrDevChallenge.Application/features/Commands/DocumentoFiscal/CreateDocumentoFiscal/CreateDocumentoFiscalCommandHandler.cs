@@ -2,15 +2,16 @@ using System;
 using MediatR;
 using SIEG.SrDevChallenge.Application.Contracts;
 using SIEG.SrDevChallenge.Application.Models;
+using SIEG.SrDevChallenge.Domain.Exceptions;
 
 namespace SIEG.SrDevChallenge.Application.features.Commands.DocumentoFiscal.CreateDocumentoFiscal;
 
-public class CreateDocumentoFiscalCommandHandler(IDocumentoFiscalRepository repository, IDocumentSchemaValidator schemaValidator) : IRequestHandler<CreateDocumentoFiscalCommand, Unit>
+public class CreateDocumentoFiscalCommandHandler(IDocumentoFiscalRepository repository, IDocumentSchemaValidator schemaValidator) : IRequestHandler<CreateDocumentoFiscalCommand, Result<Guid>>
 {
     private readonly IDocumentoFiscalRepository _repository = repository;
     private readonly IDocumentSchemaValidator schemaValidator = schemaValidator;
 
-    public async Task<Unit> Handle(CreateDocumentoFiscalCommand request, CancellationToken cancellationToken)
+    public async Task<Result<Guid>> Handle(CreateDocumentoFiscalCommand request, CancellationToken cancellationToken)
     {
         DocumentoFiscalReader reader = new(request.XMLdoc);
 
@@ -18,10 +19,14 @@ public class CreateDocumentoFiscalCommandHandler(IDocumentoFiscalRepository repo
         if (!result.IsValid)
         {
             //Todo criar estrutura melhor
-            throw new InvalidDataException($"Xml de {reader.Metadata.TipoDocumento} inválido");
+            throw new ValidationException($"XML inválido para {reader.Metadata.TipoDocumento}", new Dictionary<string, string[]>
+            {
+                { "Errors", result.Errors.ToArray() },
+               
+            });
         }
         Domain.Entities.DocumentoFiscal documentoFiscal = new()
-        {                       
+        {
             DocumentoEmissor = reader.Metadata.DocumentoEmitente,
             DocumentoDestinatario = reader.Metadata.DocumentoDestinatario,
             TipoDocumento = reader.Metadata.TipoDocumento,
@@ -29,11 +34,22 @@ public class CreateDocumentoFiscalCommandHandler(IDocumentoFiscalRepository repo
             ChaveAcesso = reader.Metadata.ChaveAcesso,
             ValorTotal = reader.Metadata.ValorTotal,
             TipoDestinatario = reader.Metadata.TipoDestinatario,
-            TipoEmissor = reader.Metadata.TipoEmitente
+            TipoEmissor = reader.Metadata.TipoEmitente,
+            HashXml = reader.HashXml,
+            XMLOriginal = reader.XmlOriginal
         };
-        
-        await _repository.AddAsync(documentoFiscal);
 
-        return Unit.Value;
+        try
+        {
+            await _repository.AddAsync(documentoFiscal);
+            //Emitir evento
+        }
+        catch (ConflictException)
+        {
+            var existing = await _repository.GetByHashAsync(documentoFiscal.HashXml) ?? throw new NotFoundException($"Documento fiscal com hash {documentoFiscal.HashXml} não encontrado.");
+            return new Result<Guid>(existing.Id, "Documento fiscal já existe.");
+        }
+
+        return new Result<Guid>(documentoFiscal.Id, "Documento fiscal criado com sucesso.") ;
     }
 }

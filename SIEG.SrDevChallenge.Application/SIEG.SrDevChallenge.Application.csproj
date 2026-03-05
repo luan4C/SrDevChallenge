@@ -6,11 +6,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="features\" />
     <Folder Include="features\Commands\" />
     <Folder Include="features\Commands\DocumentoFiscal\" />
     <Folder Include="features\Commands\DocumentoFiscal\CreateDocumentoFiscal\" />
-    <Folder Include="features\Queries\" />
+    <Folder Include="features\Commands\DocumentoFiscal\RemoveDocumentoFIscal\" />
     <Folder Include="IoC\" />
     <Folder Include="Models\" />
   </ItemGroup>

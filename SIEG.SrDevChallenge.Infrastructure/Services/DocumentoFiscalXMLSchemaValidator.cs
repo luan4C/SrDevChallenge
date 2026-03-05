@@ -27,11 +27,12 @@ public class DocumentoFiscalXMLSchemaValidator : IDocumentSchemaValidator
                 XmlSchemaValidationFlags.ReportValidationWarnings |
                 XmlSchemaValidationFlags.ProcessIdentityConstraints |
                 XmlSchemaValidationFlags.ProcessInlineSchema |
-                XmlSchemaValidationFlags.ProcessSchemaLocation
+                XmlSchemaValidationFlags.ProcessSchemaLocation,
+            Async = true
         };
 
         settings.ValidationEventHandler += (_, e) =>
-        {
+        {            
             result.Errors.Add("{e.Severity}: {e.Message}");
         };
 
@@ -48,16 +49,15 @@ public class DocumentoFiscalXMLSchemaValidator : IDocumentSchemaValidator
         var rootpath = Path.Combine(AppContext.BaseDirectory, "Schemas");
         var path = tipoDocumento switch
         {
-            TipoDocumentoFiscal.NFe => Path.Combine(rootpath, "NFe-4.0", "nfe_v4.00.xsd"),
-            TipoDocumentoFiscal.CTe => Path.Combine(rootpath, "CTe-4.0", "cte_v4.00.xsd"),
+            TipoDocumentoFiscal.NFe => Path.Combine(rootpath, "NFe-4.0", "procNFe_v4.00.xsd"),
+            TipoDocumentoFiscal.CTe => Path.Combine(rootpath, "CTe-4.0", "procCTe_v4.00.xsd"),
             TipoDocumentoFiscal.NFSe => Path.Combine(rootpath, "NFSe-1.0", "NFSe_v1.00.xsd"),
             _ => throw new ArgumentException("Parâmentro inválido ao buscar esquema de validação")
         };
 
-        var schemaSet = new XmlSchemaSet { XmlResolver = null};
-
-        using var xsd = XmlReader.Create(path, new() {XmlResolver = null});
-        schemaSet.Add(null, xsd);
+        var schemaSet = new XmlSchemaSet { XmlResolver = new XmlUrlResolver()};
+        
+        schemaSet.Add(null, path);
         schemaSet.Compile();
         return schemaSet;
     }

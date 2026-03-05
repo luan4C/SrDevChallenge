@@ -19,6 +19,7 @@
   <ItemGroup>
     <Folder Include="Configurations\" />
     <Folder Include="Endpoints\" />
+    <Folder Include="Middlewares\" />
   </ItemGroup>
 
 </Project>

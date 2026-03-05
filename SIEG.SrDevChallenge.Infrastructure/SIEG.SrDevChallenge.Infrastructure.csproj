@@ -8,7 +8,6 @@
     <Folder Include="IoC\" />
     <Folder Include="Messaging\" />
     <Folder Include="Messaging\Models\" />
-    <Folder Include="Persistence\" />
     <Folder Include="Persistence\Contexts\" />
     <Folder Include="Persistence\Repositories\" />
     <Folder Include="Schemas\" />
@@ -22,7 +21,15 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.3" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.3" />
     <PackageReference Include="MongoDB.EntityFrameworkCore" Version="10.0.0" />
-
+    <Content Include="Schemas\CTe-4.0\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Schemas\NFe-4.0\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Schemas\NFSe-1.0\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <PropertyGroup>

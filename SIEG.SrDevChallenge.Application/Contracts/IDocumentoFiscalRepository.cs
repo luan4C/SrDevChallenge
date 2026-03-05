@@ -6,6 +6,7 @@ namespace SIEG.SrDevChallenge.Application.Contracts;
 public interface IDocumentoFiscalRepository : IRepository<DocumentoFiscal>
 {
     Task<DocumentoFiscal?> GetByChaveAcessoAsync(string chaveacesso);
+    Task<DocumentoFiscal?> GetByHashAsync(string hashXml);
     Task<DocumentoFiscal?> GetById(Guid id);
     
 }

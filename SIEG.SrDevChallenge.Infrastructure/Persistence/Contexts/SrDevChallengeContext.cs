@@ -8,7 +8,7 @@ namespace SIEG.SrDevChallenge.Infrastructure.Persistence.Contexts;
 public class SrDevChallengeContext(DbContextOptions<SrDevChallengeContext> options): DbContext(options)
 {
     public virtual DbSet<DocumentoFiscal> DocumentosFiscais {get ; set;}
-
+    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

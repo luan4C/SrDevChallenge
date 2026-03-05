@@ -45,7 +45,7 @@ public class DocumentoFiscalReader : IDisposable
         using var reader = XmlReader.Create(new StringReader(xml), _readerSettings);
         reader.MoveToContent();
 
-        IdentificaTipoDocumentoFiscal(reader);
+        metadata.TipoDocumento = IdentificaTipoDocumentoFiscal(reader);
 
         int emitDepth = -1;
         int destDepth = -1;
@@ -53,19 +53,43 @@ public class DocumentoFiscalReader : IDisposable
 
         int icmsTotDepth = -1;
         int vPrestDepth = -1;
+        int totalDepth = -1;
 
         while (reader.Read())
         {
             if (reader.NodeType == XmlNodeType.Element)
             {
+                if (reader.NodeType == XmlNodeType.Element &&
+                    reader.LocalName == "vNF")
+                {
+                    var s = reader.ReadElementContentAsString();
+
+                    if (DecimalHelpers.TryParseDecimalCultureAgnostic(s, out var v))
+                    {
+                        metadata.ValorTotal = v;
+                        break;
+                    }
+                }
 
                 if (reader.LocalName == "emit") emitDepth = reader.Depth;
                 if (reader.LocalName == "dest") destDepth = reader.Depth;
+                if (reader.LocalName == "total")
+                    totalDepth = reader.Depth;
+
+                if (reader.LocalName == "ICMSTot" &&
+                    totalDepth != -1 &&
+                    reader.Depth > totalDepth)
+                {
+                    icmsTotDepth = reader.Depth;
+                }
+
+                if (reader.LocalName == "vPrest")
+                    vPrestDepth = reader.Depth;
 
                 switch (reader.LocalName)
                 {
                     case "infNFe":
-                    case "infCTe":
+                    case "infCte":
                         var id = reader.GetAttribute("Id");
                         if (!string.IsNullOrEmpty(id))
                             metadata.ChaveAcesso = id.Replace("NFe", "").Replace("CTe", "");
@@ -80,8 +104,8 @@ public class DocumentoFiscalReader : IDisposable
 
                     case "CNPJ":
                     case "CPF":
-                        var doc = reader.ReadElementContentAsString();
                         var tipoPessoa = reader.LocalName == "CNPJ" ? TipoPessoaFiscal.PJ : TipoPessoaFiscal.PF;
+                        var doc = reader.ReadElementContentAsString();
 
                         var insideEmit = emitDepth != -1 && reader.Depth > emitDepth;
                         var insideDest = destDepth != -1 && reader.Depth > destDepth;
@@ -97,18 +121,14 @@ public class DocumentoFiscalReader : IDisposable
                             metadata.TipoDestinatario = tipoPessoa;
                         }
                         break;
-
-
-                    case "ICMSTot":
-                        icmsTotDepth = reader.Depth;
-                        break;
-
                     case "vNF":
                         if (metadata.TipoDocumento == TipoDocumentoFiscal.NFe &&
-                            metadata.ValorTotal == null &&
-                            icmsTotDepth != -1 && reader.Depth > icmsTotDepth)
+                            metadata.ValorTotal == default &&
+                            icmsTotDepth != -1 &&
+                            reader.Depth > icmsTotDepth)
                         {
                             var s = reader.ReadElementContentAsString();
+
                             if (DecimalHelpers.TryParseDecimalCultureAgnostic(s, out var v))
                                 metadata.ValorTotal = v;
                         }
@@ -121,7 +141,7 @@ public class DocumentoFiscalReader : IDisposable
 
                     case "vTPrest":
                         if (metadata.TipoDocumento == TipoDocumentoFiscal.CTe &&
-                            metadata.ValorTotal == null &&
+                            metadata.ValorTotal == default &&
                             vPrestDepth != -1 && reader.Depth > vPrestDepth)
                         {
                             var s = reader.ReadElementContentAsString();
@@ -163,7 +183,7 @@ public class DocumentoFiscalReader : IDisposable
                 metadata.DocumentoEmitente != null &&
                 metadata.DocumentoDestinatario != null &&
                 (metadata.TipoDocumento == TipoDocumentoFiscal.NFSe || metadata.ChaveAcesso != null) &&
-                metadata.ValorTotal != null)
+                metadata.ValorTotal != default)
             {
                 break;
             }
