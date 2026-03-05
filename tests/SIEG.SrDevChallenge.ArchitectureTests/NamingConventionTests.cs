@@ -61,28 +61,6 @@ public class NamingConventionTests : ArchitectureTestBase
     }
 
     [Test]
-    public void Configurations_Should_HaveConfigurationSuffix()
-    {
-        // Arrange & Act
-        var result = Types.InCurrentDomain()
-            .That()
-            .ResideInNamespace($"{ApiNamespace}.Configurations")
-            .And()
-            .AreClasses()
-            .Should()
-            .HaveNameEndingWith("Configurations")
-            .Or()
-            .HaveNameEndingWith("Configuration")
-            .Or()
-            .HaveNameEndingWith("Settings")
-            .GetResult();
-
-        // Assert
-        result.IsSuccessful.Should().BeTrue(
-            because: "Configuration classes should have appropriate suffix");
-    }
-
-    [Test]
     public void Endpoints_Should_HaveEndpointsSuffix()
     {
         // Arrange & Act

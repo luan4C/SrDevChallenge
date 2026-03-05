@@ -12,8 +12,7 @@ DotNetEnv.Env.Load(@"..\..\.env");
 builder.Configuration.AddEnvironmentVariables();
 
 // Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.ConfigureSwagger();
 builder.Services.ConfigureMiddlewareServices();
 builder.Services.ConfigureEnvironment(builder.Configuration);
 builder.Services.ConfigureXMLServices();
@@ -40,15 +39,12 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 app.ConfigureMiddlewares();
-
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+app.UseSwaggerDocumentation();
 
 app.UseHttpsRedirection();
 
 app.MapDocumentosEndpoints();
+
 
 // Só configura MongoDB se não for ambiente de teste
 if (app.Environment.EnvironmentName != "Testing")

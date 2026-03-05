@@ -18,44 +18,121 @@ public static class DocumentosEndpoints
     {
         var group = app.MapGroup("/api/documentos-fiscais")
             .WithTags("Documentos Fiscais")
-            .WithDescription("Endpoints para gerenciamento de documentos fiscais");
+            .WithDescription("Endpoints para gerenciamento de documentos fiscais eletrônicos")
+            .WithOpenApi();
 
         group.DisableAntiforgery();
 
-        group.MapPost("/", UploadXML).AddOpenApiOperationTransformer((operation, context, _) =>
-        {
-            operation.Summary = "Upload de arquivo XML para criação de documento fiscal";
-            operation.Description = "Envia um arquivo XML contendo os dados do documento fiscal a ser criado. O arquivo deve estar no formato correto para que o documento seja processado e armazenado.";
-            return Task.CompletedTask;
-        }).RequireRateLimiting("fixed");
+      
+        group.MapPost("/", UploadXML)
+            .WithName("CreateDocumentoFiscal")
+            .WithSummary("Upload de arquivo XML para criação de documento fiscal")
+            .WithDescription("""
+                Envia um arquivo XML contendo os dados do documento fiscal a ser criado. Suporta NFe, NFSe e CTe.
+                
+                **Tipos de documento suportados:**
+                - NFe (Nota Fiscal Eletrônica)
+                - NFSe (Nota Fiscal de Serviços Eletrônica)  
+                - CTe (Conhecimento de Transporte Eletrônico)
+                
+                **Validações realizadas:**
+                - Formato do arquivo deve ser XML
+                - Content-Type deve ser 'application/xml'
+                - XML deve estar em formato válido
+                - Chave de acesso deve ser única
+                
+                **Rate Limiting:** Limitado a 100 requests por minuto
+                """)
+            .Accepts<IFormFile>("multipart/form-data")
+            .Produces<Result<Guid>>(200)
+            .Produces<ValidationProblemDetails>(400)
+            .Produces(401)
+            .Produces(429)
+            .Produces(500)
+            .RequireRateLimiting("fixed");
 
-        group.MapGet("/", GetPagedList).AddOpenApiOperationTransformer((operation, context, _) =>
-        {
-            operation.Summary = "Consulta de documentos fiscais com filtros e paginação";
-            operation.Description = "Permite consultar a lista de documentos fiscais com base em filtros como data de emissão, emissor, destinatário e tipo de documento. Os resultados são paginados para facilitar a navegação.";
-            return Task.CompletedTask;
-        });
+        
+        group.MapGet("/", GetPagedList)
+            .WithName("GetDocumentosFiscaisList")
+            .WithSummary("Consulta de documentos fiscais com filtros e paginação")
+            .WithDescription("""
+                Permite consultar a lista de documentos fiscais aplicando filtros por data, emissor, 
+                destinatário e tipo de documento. Os resultados são paginados.
+                
+                **Filtros disponíveis:**
+                - Data de início e fim (obrigatório)
+                - Documento do emissor (obrigatório)
+                - Documento do destinatário (opcional)
+                - Tipo de documento fiscal (opcional: 1-NFe, 2-NFSe, 3-CTe)
+                
+                **Paginação:**
+                - PageNumber: Número da página (padrão: 1)
+                - PageSize: Itens por página (padrão: 10, máximo: 100)
+                """)
+            .Produces<PagedResult<object>>(200)
+            .Produces<ProblemDetails>(400)
+            .Produces(401)
+            .Produces(500);
 
-        group.MapGet("/{id:guid}", GetById).AddOpenApiOperationTransformer((operation, context, _) =>
-        {
-            operation.Summary = "Consulta de documento fiscal por ID";
-            operation.Description = "Permite consultar os detalhes de um documento fiscal específico utilizando seu ID único (GUID). Retorna as informações completas do documento fiscal, incluindo dados do emissor, destinatário, itens e valores.";
-            return Task.CompletedTask;
-        });
+       
+        group.MapGet("/{id:guid}", GetById)
+            .WithName("GetDocumentoFiscalById")
+            .WithSummary("Consulta de documento fiscal por ID")
+            .WithDescription("""
+                Permite consultar os detalhes completos de um documento fiscal específico utilizando seu ID único.
+                
+                **Informações retornadas:**
+                - Dados completos do documento fiscal
+                - Informações do emissor e destinatário
+                - Itens do documento
+                - Valores e totais
+                - Dados de auditoria (criação/atualização)
+                """)
+            .Produces<Result<object>>(200)
+            .Produces(404)
+            .Produces(401)
+            .Produces(500);
 
-        group.MapDelete("/{id:guid}", Remove).AddOpenApiOperationTransformer((operation, context, _) =>
-        {
-            operation.Summary = "Remoção de documento fiscal por ID";
-            operation.Description = "Permite remover um documento fiscal específico utilizando seu ID único (GUID). Esta operação é irreversível e deve ser utilizada com cautela.";
-            return Task.CompletedTask;
-        }).RequireRateLimiting("fixed");
+    
+        group.MapDelete("/{id:guid}", Remove)
+            .WithName("RemoveDocumentoFiscal")
+            .WithSummary("Remoção de documento fiscal por ID")
+            .WithDescription("""
+                Permite remover um documento fiscal específico utilizando seu ID único.
+                
+                **ATENÇÃO:** Esta operação é irreversível e deve ser utilizada com cautela.
+                
+                **Rate Limiting:** Limitado a 100 requests por minuto
+                """)
+            .Produces<Result<bool>>(200)
+            .Produces(404)
+            .Produces(401)
+            .Produces(429)
+            .Produces(500)
+            .RequireRateLimiting("fixed");
 
-        group.MapPut("/{id:guid}", UpdateDocument).AddOpenApiOperationTransformer((operation, context, _) =>
-        {
-            operation.Summary = "Atualização de documento fiscal por ID";
-            operation.Description = "Permite atualizar um documento fiscal existente utilizando seu ID único (GUID) e enviando um novo arquivo XML. O documento será validado antes da atualização.";
-            return Task.CompletedTask;
-        }).RequireRateLimiting("fixed");
+        group.MapPut("/{id:guid}", UpdateDocument)
+            .WithName("UpdateDocumentoFiscal")
+            .WithSummary("Atualização de documento fiscal por ID")
+            .WithDescription("""
+                Permite atualizar um documento fiscal existente utilizando seu ID único e enviando um novo arquivo XML.
+                
+                **Validações realizadas:**
+                - Documento deve existir
+                - Formato do arquivo deve ser XML
+                - Content-Type deve ser 'application/xml'
+                - XML deve estar em formato válido
+                
+                **Rate Limiting:** Limitado a 100 requests por minuto
+                """)
+            .Accepts<IFormFile>("multipart/form-data")
+            .Produces<Result<bool>>(200)
+            .Produces<ProblemDetails>(400) 
+            .Produces(404)
+            .Produces(401)
+            .Produces(429)
+            .Produces(500)
+            .RequireRateLimiting("fixed");
     }
 
     private static async Task<IResult> Remove([FromServices] IMediator mediatr, [FromRoute] Guid id)

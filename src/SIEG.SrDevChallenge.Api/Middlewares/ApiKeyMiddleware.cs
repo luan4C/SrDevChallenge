@@ -78,9 +78,7 @@ public class ApiKeyMiddleware(IOptions<ApiKeySettings> apiKeySettings, ILogger<A
         var excludedPaths = new[]
         {
             "/openapi",
-            "/health",
             "/swagger",
-            "/favicon.ico"
         };
 
         return excludedPaths.Any(excluded => 
