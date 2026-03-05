@@ -14,7 +14,6 @@ O objetivo do projeto é demonstrar boas práticas de engenharia de software, in
 - Arquitetura orientada a eventos
 - Resiliência e retry
 - Rate limiting
-- Testes de carga
 
 ---
 
@@ -61,7 +60,7 @@ Verificar instalação:
 ```
 dotnet --version
 ```
-## 2. Criar .env baseado no exemplo do [.env.example](.env.example)
+## 2. Criar .env na raiz do projeto baseado no exemplo do [.env.example](.env.example)
 Importante para o projeto rodar com as configurações certas e o container também
 
 ## 3. Subir dependências (Docker)
