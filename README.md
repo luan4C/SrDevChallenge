@@ -17,6 +17,8 @@ O objetivo do projeto é demonstrar boas práticas de engenharia de software, in
 
 ---
 
+## Documentação API no `/swagger`
+
 # Eventos
 - Evento de documento criado alimenta uma collection "documentosFiscaisResumoMensal"
 
@@ -104,6 +106,7 @@ A Clean Architecture com CQRS (mediatr) foi escolhida para aumentar o nível de 
 - Dinamização na validação de documentos fiscais, o projeto hoje valida apenas o procNFE, procCTE e NFSe
 - Testes de carga com k6
 - Adicionar mais casos de teste de integração e unitário.
+- Segurança
 
 # Autor
 
